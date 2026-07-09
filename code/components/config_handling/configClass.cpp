@@ -157,6 +157,13 @@ void ConfigClass::readConfigFile(bool unityTest, std::string unityTestData)
     hooks.malloc_fn = malloc_psram_heap_cjson;
     hooks.free_fn = free_psram_heap_cjson;
     cJSON_InitHooks(&hooks);
+
+    // Release the previous cJSON tree (if any) while the matching PSRAM hooks are still active
+    if (cJsonObject != NULL) {
+        cJSON_Delete(cJsonObject);
+        cJsonObject = NULL;
+    }
+
     cJSONObjectPSRAM.preallocatedMemory = cJsonObjectBuffer;
     cJSONObjectPSRAM.preallocatedMemorySize = CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE;
     cJSONObjectPSRAM.usedMemory = 0;
@@ -249,6 +256,13 @@ esp_err_t ConfigClass::setConfigRequest(httpd_req_t *req)
     hooks.malloc_fn = malloc_psram_heap_cjson;
     hooks.free_fn = free_psram_heap_cjson;
     cJSON_InitHooks(&hooks);
+
+    // Release the previous cJSON tree (if any) while the matching PSRAM hooks are still active
+    if (cJsonObject != NULL) {
+        cJSON_Delete(cJsonObject);
+        cJsonObject = NULL;
+    }
+
     cJSONObjectPSRAM.preallocatedMemory = cJsonObjectBuffer;
     cJSONObjectPSRAM.preallocatedMemorySize = CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE;
     cJSONObjectPSRAM.usedMemory = 0;
@@ -1785,6 +1799,13 @@ esp_err_t ConfigClass::serializeConfig(bool unityTest)
     hooks.malloc_fn = malloc_psram_heap_cjson;
     hooks.free_fn = free_psram_heap_cjson;
     cJSON_InitHooks(&hooks);
+
+    // Release the previous cJSON tree (if any) while the matching PSRAM hooks are still active
+    if (cJsonObject != NULL) {
+        cJSON_Delete(cJsonObject);
+        cJsonObject = NULL;
+    }
+
     cJSONObjectPSRAM.preallocatedMemory = cJsonObjectBuffer;
     cJSONObjectPSRAM.preallocatedMemorySize = CONFIG_HANDLING_PREALLOCATED_BUFFER_SIZE;
     cJSONObjectPSRAM.usedMemory = 0;
