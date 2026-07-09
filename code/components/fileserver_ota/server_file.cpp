@@ -85,11 +85,13 @@ esp_err_t getDataFileList(httpd_req_t *req)
     cJSON *cJSONObject = cJSON_CreateObject();
     if (!cJSONObject) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
+        closedir(dir);
         return ESP_FAIL;
     }
     cJSON *files;
     if (!cJSON_AddItemToObject(cJSONObject, "files", files = cJSON_CreateArray())) {
         cJSON_Delete(cJSONObject);
+        closedir(dir);
         return ESP_FAIL;
     }
 
@@ -137,11 +139,13 @@ esp_err_t getTfliteFileList(httpd_req_t *req)
     cJSON *cJSONObject = cJSON_CreateObject();
     if (!cJSONObject) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
+        closedir(dir);
         return ESP_FAIL;
     }
     cJSON *files;
     if (!cJSON_AddItemToObject(cJSONObject, "files", files = cJSON_CreateArray())) {
         cJSON_Delete(cJSONObject);
+        closedir(dir);
         return ESP_FAIL;
     }
 
@@ -189,11 +193,13 @@ esp_err_t getCertFileList(httpd_req_t *req)
     cJSON *cJSONObject = cJSON_CreateObject();
     if (!cJSONObject) {
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "Failed to create JSON object");
+        closedir(dir);
         return ESP_FAIL;
     }
     cJSON *files;
     if (!cJSON_AddItemToObject(cJSONObject, "files", files = cJSON_CreateArray())) {
         cJSON_Delete(cJSONObject);
+        closedir(dir);
         return ESP_FAIL;
     }
 
@@ -511,6 +517,7 @@ static esp_err_t getDirectory(httpd_req_t *req, const char *dirpath, const char 
     // Send static HTML file
     FILE *file = fopen(HTML_FILE_FILESERVER_STATIC, "rb");
     if (!file) {
+        closedir(dir);
         std::string msg = "Failed to read file: " + std::string(HTML_FILE_FILESERVER_STATIC);
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, msg.c_str());
         return ESP_FAIL;
@@ -527,6 +534,7 @@ static esp_err_t getDirectory(httpd_req_t *req, const char *dirpath, const char 
     while ((bufSizeUsed = fread(buffer, 1, WEBSERVER_SCRATCH_BUFSIZE, file)) > 0) {
         if (httpd_resp_send_chunk(req, buffer, bufSizeUsed) != ESP_OK) {
             fclose(file);
+            closedir(dir);
             httpd_resp_sendstr_chunk(req, NULL);
             std::string msg = "Failed to send file: " + std::string(HTML_FILE_FILESERVER_STATIC);
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
