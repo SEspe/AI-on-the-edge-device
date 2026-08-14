@@ -396,6 +396,34 @@ esp_err_t initWifiClient(void)
         return retVal;
     }
 
+    // Disable WiFi power save. The default is WIFI_PS_MIN_MODEM, which parks the radio
+    // between beacons: idle round trips pick up ~100ms of latency and sustained transfers
+    // are throttled. Measured on hardware: idle ping ~100-200ms with modem sleep versus
+    // single-digit ms with the radio kept awake. The device is mains powered, so trading
+    // power draw for predictable latency and throughput is the right call.
+    retVal = esp_wifi_set_ps(WIFI_PS_NONE);
+    if (retVal != ESP_OK) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_set_ps: Error: " + intToHexString(retVal));
+    }
+
+    // Cap transmit power. Unit is 0.25dBm, so 60 = 15dBm against a ~20dBm default.
+    // Full power draws current spikes of 250-350mA during TX bursts, which sags the 3V3
+    // rail on ESP32CAM-class hardware and shows up as heavy packet loss and multi-second
+    // ping times while RSSI still reads healthy - small MQTT messages keep working while
+    // sustained transfers collapse. Backing off costs link budget we have to spare (RSSI
+    // measured at -51..-55) and keeps the peak draw within what the supply can deliver.
+    // It also offsets the extra average draw from keeping the radio awake above.
+    retVal = esp_wifi_set_max_tx_power(60);
+    if (retVal != ESP_OK) {
+        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_set_max_tx_power: Error: " + intToHexString(retVal));
+    }
+    else {
+        int8_t txPower = 0;
+        if (esp_wifi_get_max_tx_power(&txPower) == ESP_OK) {
+            LogFile.writeToFile(ESP_LOG_INFO, TAG, "WLAN TX power: " + std::to_string(txPower / 4) + " dBm, power save: off");
+        }
+    }
+
     // Set hostname
     if (!cfgDataPtr->hostname.empty()) {
         retVal = esp_netif_set_hostname(wifiStation, cfgDataPtr->hostname.c_str());
