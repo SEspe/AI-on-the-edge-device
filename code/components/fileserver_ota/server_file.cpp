@@ -37,6 +37,24 @@ extern "C" {
 #include "system.h"
 #include "psram.h"
 
+
+// ESP-IDF bumps a session's LRU counter only once a request has completed
+// (httpd_sess.c: after httpd_req_delete). It never calls its own
+// httpd_sess_update_lru_counter() - the symbol exists but has no callers.
+// A long chunked transfer therefore keeps a stale counter for its whole
+// duration and becomes the oldest session, so as soon as the socket table
+// fills up httpd_accept_conn() picks exactly that socket for
+// httpd_sess_close_lru() and the response is truncated mid-stream.
+// Refreshing the counter while streaming makes an active transfer look
+// recently used, so the purge falls on a genuinely idle session instead.
+// Declared here because the symbol lives in the private esp_httpd_priv.h.
+extern "C" esp_err_t httpd_sess_update_lru_counter(httpd_handle_t handle, int sockfd);
+
+static inline void keepSessionAlive(httpd_req_t *req)
+{
+    httpd_sess_update_lru_counter(req->handle, httpd_req_to_sockfd(req));
+}
+
 #ifdef ENABLE_MQTT
 #include "interface_mqtt.h"
 #endif // ENABLE_MQTT
@@ -268,6 +286,8 @@ esp_err_t IRAM_ATTR sendFile(httpd_req_t *req, std::string filename, bool disabl
     size_t bytesRead = 0;
 
     while ((bytesRead = fread(buffer, 1, WEBSERVER_SCRATCH_BUFSIZE, file)) > 0) {
+        keepSessionAlive(req); // Keep this socket off the LRU purge list while streaming
+
         if (httpd_resp_send_chunk(req, buffer, bytesRead) != ESP_OK) {
             fclose(file);
             httpd_resp_sendstr_chunk(req, NULL);
@@ -338,6 +358,8 @@ static esp_err_t sendLogfile(httpd_req_t *req, bool sendFullFile)
     size_t bytesRead = 0;
 
     while ((bytesRead = fread(buffer, 1, WEBSERVER_SCRATCH_BUFSIZE, file)) > 0) {
+        keepSessionAlive(req); // Keep this socket off the LRU purge list while streaming
+
         if (httpd_resp_send_chunk(req, buffer, bytesRead) != ESP_OK) {
             fclose(file);
             httpd_resp_sendstr_chunk(req, NULL);
@@ -440,6 +462,8 @@ static esp_err_t sendDatafile(httpd_req_t *req, bool sendFullFile)
     size_t bytesRead = 0;
 
     while ((bytesRead = fread(buffer, 1, WEBSERVER_SCRATCH_BUFSIZE, file)) > 0) {
+        keepSessionAlive(req); // Keep this socket off the LRU purge list while streaming
+
         if (httpd_resp_send_chunk(req, buffer, bytesRead) != ESP_OK) {
             fclose(file);
             httpd_resp_sendstr_chunk(req, NULL);
@@ -532,6 +556,8 @@ static esp_err_t getDirectory(httpd_req_t *req, const char *dirpath, const char 
     size_t bufSizeUsed = 0;
 
     while ((bufSizeUsed = fread(buffer, 1, WEBSERVER_SCRATCH_BUFSIZE, file)) > 0) {
+        keepSessionAlive(req); // Keep this socket off the LRU purge list while streaming
+
         if (httpd_resp_send_chunk(req, buffer, bufSizeUsed) != ESP_OK) {
             fclose(file);
             closedir(dir);
@@ -548,6 +574,7 @@ static esp_err_t getDirectory(httpd_req_t *req, const char *dirpath, const char 
     // Build table content
     auto sendChunk = [&]() {
         if (bufSizeUsed > 0) {
+            keepSessionAlive(req); // Keep this socket off the LRU purge list while streaming
             httpd_resp_send_chunk(req, buffer, bufSizeUsed);
             bufSizeUsed = 0;
             buffer[0] = '\0';
@@ -729,6 +756,8 @@ static esp_err_t download_get_handler(httpd_req_t *req)
     size_t bytesRead = 0;
 
     while ((bytesRead = fread(buffer, 1, WEBSERVER_SCRATCH_BUFSIZE, file)) > 0) {
+        keepSessionAlive(req); // Keep this socket off the LRU purge list while streaming
+
         if (httpd_resp_send_chunk(req, buffer, bytesRead) != ESP_OK) {
             fclose(file);
             httpd_resp_sendstr_chunk(req, NULL);

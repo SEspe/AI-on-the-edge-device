@@ -652,7 +652,10 @@ httpd_handle_t startWebserver(void)
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.stack_size = 10240;
     config.core_id = 1;
-    config.max_open_sockets = 5;    // With default value 7: Error "httpd_accept_conn: error in accept"
+    config.max_open_sockets = 8;    // Needs CONFIG_LWIP_MAX_SOCKETS headroom (16), otherwise
+                                    // "httpd_accept_conn: error in accept". More sessions means
+                                    // the socket table fills up less often, so LRU purges - which
+                                    // can cut an in-flight file transfer - become rare.
     config.max_uri_handlers = 24;   // Max number of URI handler
     config.lru_purge_enable = true; // Cut old connections if new ones are needed
     config.uri_match_fn = httpd_uri_match_wildcard;

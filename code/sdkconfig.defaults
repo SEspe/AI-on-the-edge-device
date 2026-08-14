@@ -184,6 +184,10 @@ CONFIG_LOG_COLORS=n
 #
 CONFIG_LWIP_IPV6=n
 CONFIG_LWIP_ESP_LWIP_ASSERT=n
+# Default (10) leaves the webserver only ~5 sessions once MQTT, mDNS and SNTP
+# have taken theirs. A full socket table forces httpd to purge a session to
+# accept a new connection, which truncates in-flight file transfers.
+CONFIG_LWIP_MAX_SOCKETS=16
 
 
 #
