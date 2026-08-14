@@ -1,5 +1,18 @@
 # Changelog
 
+## [17.4.4-SEFork](https://github.com/SEspe/AI-on-the-edge-device/compare/v17.4.3-SEFork...v17.4.4-SEFork) (2026-08-14)
+
+### Bug Fixes
+
+* **fileserver:** stop LRU session purge from truncating in-flight file transfers (5bd81d9)
+
+Large file server downloads were cut off mid-stream at arbitrary offsets whenever the WebUI was
+being used at the same time. ESP-IDF only refreshes a session's LRU counter once a request
+*completes*, so a transfer running for tens of seconds keeps a stale counter and becomes the
+oldest session; when the socket table fills, `httpd_accept_conn()` purges exactly that socket.
+Every streaming loop now refreshes the counter, and the socket budget was raised
+(`CONFIG_LWIP_MAX_SOCKETS` 10 → 16, `max_open_sockets` 5 → 8) so the table fills far less often.
+
 ## [17.4.3-SEFork](https://github.com/SEspe/AI-on-the-edge-device/compare/v17.4.2-SEFork...v17.4.3-SEFork) (2026-08-14)
 
 ### Bug Fixes
