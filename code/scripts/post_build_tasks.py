@@ -111,7 +111,7 @@ def postBuildAction(source, target, env):
     if not inGithubActions:
         print(f"{scriptName}: Step 5: Create firmware package (ZIP file)")
 
-        zipFilename = f"AI-on-the-edge-device__{envName}__SLFork_{commitHash}.zip"
+        zipFilename = f"AI-on-the-edge-device__{envName}__SEFork_{commitHash}.zip"
         zipPath = os.path.join(projectRoot, zipFilename)
 
         def addDirectoryToZip(zipFile, directory, basePath, targetPrefix="", renameMap=None, excludeFiles=None):

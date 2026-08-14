@@ -1,5 +1,26 @@
 # Changelog
 
+## [17.4.2-SEFork](https://github.com/SEspe/AI-on-the-edge-device/compare/v17.4.1-SLFork...v17.4.2-SEFork) (2026-08-14)
+
+First release published under this fork's own `-SEFork` naming. Functionally identical to
+`17.4.1-SLFork` apart from the WebUI attribution and packaging changes below.
+
+### Other Changes
+
+* **webui:** show fork lineage Jomjol → Slider0007 → SteinE in the copyright block
+* **webui:** point the firmware/WebUI commit links and the overview footer at this fork, so
+  commits that exist only here resolve instead of returning 404
+* **build:** name the firmware package `__SEFork_` to distinguish builds of this fork from
+  upstream artifacts
+
+### Notes
+
+* Verified on ESP32CAM hardware: OTA applied cleanly and the meter decoded `294.777` with
+  status `000 Valid` afterwards.
+* Flash usage is 88.4% of the 4 MB legacy partition layout — limited headroom for new features.
+* Building locally requires the Python `markdown` package (an undeclared dependency), and `-j 3`
+  on memory-constrained machines to avoid a gcc out-of-memory crash in TFLite Micro.
+
 ## [17.4.1-SLFork](https://github.com/SEspe/AI-on-the-edge-device/compare/v17.4.0-SLFork...v17.4.1-SLFork) (2026-07-09)
 
 

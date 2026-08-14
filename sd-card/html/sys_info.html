@@ -515,7 +515,9 @@
 		<tr>
 			<td>
 				Copyright &copy; 2020 - 2026 by <a href="https://github.com/jomjol/AI-on-the-edge-device" target=_blank>Jomjol</a> and others<br>
-				Remark: This is a forked version by <a href="https://github.com/Slider0007/AI-on-the-edge-device" target=_blank>Slider0007</a>
+				Remark: This is a forked version by <a href="https://github.com/jomjol/AI-on-the-edge-device" target=_blank>Jomjol</a>
+				&rarr; <a href="https://github.com/Slider0007/AI-on-the-edge-device" target=_blank>Slider0007</a>
+				&rarr; <a href="https://github.com/SEspe/AI-on-the-edge-device" target=_blank>SteinE</a>
 			</td>
 		</tr>
 </body>
@@ -677,7 +679,7 @@
 
 				const FirmwareVersionSplit = _jsonData.firmware_version.split('Commit: ');
 				const FirmwareVersionCommit = FirmwareVersionSplit[1].substring(0, 7);
-				const FirmwareVersionString = FirmwareVersionSplit[0] + "Commit: <a href=\"https://github.com/Slider0007/AI-on-the-edge-device/commits/" +
+				const FirmwareVersionString = FirmwareVersionSplit[0] + "Commit: <a href=\"https://github.com/SEspe/AI-on-the-edge-device/commits/" +
 										FirmwareVersionCommit + "\" target=\"_blank\">" + FirmwareVersionCommit + "</a>)";
 				document.getElementById("firmware_version").innerHTML = FirmwareVersionString;
 
@@ -692,7 +694,7 @@
 				else {
 					const HTMLVersionSplit = _jsonData.html_version.split('Commit: ');
 					const HTMLVersionCommit = HTMLVersionSplit[1].substring(0, 7);
-					const HTMLVersionString = HTMLVersionSplit[0] + "Commit: <a href=\"https://github.com/Slider0007/AI-on-the-edge-device/commits/" +
+					const HTMLVersionString = HTMLVersionSplit[0] + "Commit: <a href=\"https://github.com/SEspe/AI-on-the-edge-device/commits/" +
 										HTMLVersionCommit + "\" target=\"_blank\">" + HTMLVersionCommit + "</a>)";
 					document.getElementById("html_version").innerHTML = HTMLVersionString;
 				}
