@@ -1,5 +1,60 @@
 # Changelog
 
+## [17.4.5-SEFork](https://github.com/SEspe/AI-on-the-edge-device/compare/v17.4.4-SEFork...v17.4.5-SEFork) (2026-08-14)
+
+Stability release. Fixes heap fragmentation that degraded the WiFi link over time, removes an
+unproven change from 17.4.4, and reverts a socket setting from 17.4.4 that made the device less
+stable. **17.4.4 should not be used** — see below.
+
+### Bug Fixes
+
+* **wlan:** allocate WiFi and LWIP buffers from PSRAM instead of internal DRAM (42913d0)
+* **wlan:** disable WiFi modem sleep (1cbd12c)
+* **webserver:** revert `max_open_sockets` to 5 — raising it to 8 in 17.4.4 made the device wedge
+  under concurrent load (b923917)
+
+### Reverts
+
+* **fileserver:** drop the httpd LRU counter refresh added in 17.4.4 (15bf27c)
+* **wlan:** drop the 15 dBm TX power cap briefly added during testing (50c65ea)
+
+### Detail
+
+**Heap fragmentation (fixed).** `CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=8192` forced every small
+allocation into internal DRAM, including the DMA-capable buffers the WiFi driver needs. Under
+sustained web server use the largest contiguous internal block fell from ~102 KB to ~18 KB, and
+the radio link degraded with it. `CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y` plus lowering
+`ALWAYSINTERNAL` to 4096 moves those allocations to PSRAM (8 MB fitted, ~2.3 MB free). Measured
+after the change: the largest internal block held at 77,824 bytes across 45+ samples including
+sustained transfers, where it previously collapsed.
+
+**LRU counter refresh (reverted).** 17.4.4 added a call to ESP-IDF's uncalled
+`httpd_sess_update_lru_counter()` from every streaming loop, on the theory that long transfers
+become the oldest session and get purged by `httpd_accept_conn()`. The mechanism is real in the
+ESP-IDF source, but hardware measurement over a verified-stable link showed no benefit: 0/6 large
+downloads completed both with and without it, truncating at 3–20% versus 17–28%. Reverted rather
+than carry an unproven change that reaches into a private symbol.
+
+**Known issue, unresolved.** Large file server downloads truncate under concurrent keep-alive
+pressure — reproducibly 0/6 with 4 held sessions plus connection churn. The cause is not yet
+identified. `curl` reports exit 18 (partial file); the next diagnostic step is logging
+`httpd_resp_send_chunk`'s actual return code rather than inferring it.
+
+**Not a firmware issue.** Severe link instability seen during testing — multi-second ping times,
+heavy packet loss, throughput collapsing from ~104 KB/s to 3–6 KB/s — was traced to a WiFi
+repeater sharing the same 2.4 GHz channel as the access point. With the repeater off: 45/45
+samples at 6–71 ms with zero packet loss. Worth ruling out before suspecting firmware.
+
+### Notes
+
+* Flash usage: 88.4% of the 4 MB legacy partition layout.
+* Building requires the Python `markdown` package, which the project does not declare.
+* Editing `sdkconfig.defaults` has no effect once `sdkconfig.<env>` exists — delete that file to
+  force it to be re-derived, or the change is silently ignored.
+* Incremental builds can skip CMake's git-hash extraction, leaving a stale commit compiled in.
+  Delete `code/main/version.cpp` and `sd-card/html/version.txt` and touch `code/main/CMakeLists.txt`
+  before cutting a release.
+
 ## [17.4.4-SEFork](https://github.com/SEspe/AI-on-the-edge-device/compare/v17.4.3-SEFork...v17.4.4-SEFork) (2026-08-14)
 
 ### Bug Fixes
