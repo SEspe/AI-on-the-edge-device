@@ -24,10 +24,12 @@ The following infos are available:
 | `mqtt_status`                        | MQTT Status<br><br>Possible states:<br>- `Connected (Encrypted)`<br>- `Connected`<br>- `Disconnected`<br>- `Disabled` | `Connected`
 | `influxdbv1_status`                  | InfluxDB v1.x Status<br><br>Possible states:<br>- `Enabled (Encrypted)`<br>- `Enabled`<br>- `Disabled` | `Disabled`
 | `influxdbv2_status`                  | InfluxDB v2.x Status<br><br>Possible states:<br>- `Enabled (Encrypted)`<br>- `Enabled`<br>- `Disabled` | `Disabled`
+| `webhook_status`                     | Webhook Status<br><br>Possible states:<br>- `Enabled (Encrypted)`<br>- `Enabled`<br>- `Disabled` | `Disabled`
 | `ntp_syncstatus`                     | NTP Synchronization Status<br><br>Possible states:<br>- `Synchronized`<br>- `In Progress`<br>- `Disabled` | `Synchronized`
 | `current_time`                       | Current Date / Time                                | `2024-02-24T10:56:11+0100`
 | `device_starttime`                   | Device Start / Boot Time                           | `2024-02-24T10:56:11+0100`
 | `device_uptime`                      | Device Uptime [sec]                                | `496`
+| `network_opmode`                     | Network Operation Mode<br><br>Possible states:<br>- `WLAN Client`<br>- `WLAN Access Point`<br>- `Ethernet` | `WLAN Client`
 | `connection_status`                  | Connection Status<br><br>Possible states:<br>- `Connected`<br>- `Disconnected` | `Connected`
 | `wlan_ssid`                          | WLAN SSID<br><br>Possible special value:<br>- `undefined`: WLAN disabled | `IOTNETWORK`
 | `wlan_rssi`                          | WLAN Signal Strength [dBm]<br><br>Possible special values:<br>- `-127`: Not connected<br>- `-255`: WLAN disabled | `-58`
@@ -88,13 +90,16 @@ The following infos are available:
     "mqtt_status": "Connected",
     "influxdbv1_status": "Disabled",
     "influxdbv2_status": "Disabled",
+    "webhook_status": "Disabled",
     "ntp_syncstatus": "Synchronized",
     "current_time": "2024-01-24T10:56:11+0100",
     "device_starttime": "2024-01-24T10:48:11+0100",
     "device_uptime": 496,
-    "wlan_status": "Connected",
+    "network_opmode": "WLAN Client",
+    "connection_status": "Connected",
     "wlan_ssid": "IOTNET",
     "wlan_rssi": -58,
+    "wlan_channel": 1,
     "mac_address": "41:23:D9:01:5E:AA",
     "network_config": "Manual",
     "ipv4_address": "192.168.1.4",

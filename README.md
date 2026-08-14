@@ -1,6 +1,6 @@
 <h1>
   <img src="images/icon/watermeter.svg" width="40px" style="vertical-align: middle;">
-  <span style="vertical-align: middle;">AI-on-the-Edge Device [SLFork]</span>
+  <span style="vertical-align: middle;">AI-on-the-Edge Device [SEFork]</span>
 </h1>
 
 Artificial intelligence is everywhere — from speech recognition to image analysis. While traditional AI often relies on powerful cloud 
@@ -90,7 +90,7 @@ image quality. The ideal setting may vary depending on your specific hardware se
 There are several convenient options to install the firmware and prepare the SD card content.
 
 ### Download Firmware
-- **Releases** - Official firmware releases are available on the **[GitHub Releases Page](https://github.com/slider0007/AI-on-the-edge-device/releases)**<br>
+- **Releases** - Official firmware releases are available on the **[GitHub Releases Page](https://github.com/SEspe/AI-on-the-edge-device/releases)**<br>
 - **Development Builds** - You can also test the latest development build / upcoming release via pull request labeled
 [autorelease: pending](https://github.com/Slider0007/AI-on-the-edge-device/pulls?q=is%3Aopen+is%3Apr+label%3A%22autorelease%3A+pending%22). 
 Follow the instructions at the bottom of the pull request to download the corresponding precompiled development build.
@@ -121,11 +121,29 @@ prepare the SD card manually.
 
 ## Build Yourself
 Developers and advanced users can build the firmware from source. Follow the [build / debug Instructions](code/README.md) for environment setup, firmware compilation and debugging. If you don’t need to customize the firmware, it’s easier to use the precompiled releases provided on the 
-[Releases page](https://github.com/slider0007/AI-on-the-edge-device/releases).
+[Releases page](https://github.com/SEspe/AI-on-the-edge-device/releases).
+
+
+## About This Fork [SEFork]
+ℹ️ This is a fork of [Slider0007’s fork](https://github.com/Slider0007/AI-on-the-edge-device), customized for personal use.
+
+- It is maintained for **one privately operated device** and is **not a general-purpose distribution**
+- Changes are driven by what that device needs — **no support, roadmap or compatibility promises**
+- Releases are tagged `-SEFork` to keep them distinct from upstream `-SLFork` releases
+- Everything upstream from here — [Slider0007](https://github.com/Slider0007/AI-on-the-edge-device)
+  and originally [jomjol](https://github.com/jomjol/AI-on-the-edge-device) — deserves the credit for
+  the project itself; **respect the upstream licenses**
+- It remains public so the changes are inspectable and reusable for **non-commercial purposes**;
+  be fair and **credit the original sources**
+- Fork-specific changes are documented in the [changelog](CHANGELOG.md) (v17.4.2-SEFork and newer)
+
+If you are looking for an actively maintained general-purpose version, use
+[Slider0007’s fork](https://github.com/Slider0007/AI-on-the-edge-device) rather than this one.
 
 
 ## Support / Community
-ℹ️ This is a fork of [jomjol’s project](https://github.com/jomjol/AI-on-the-edge-device), customized for personal use.
+ℹ️ Slider0007’s fork, on which this one is based, is itself a fork of
+[jomjol’s project](https://github.com/jomjol/AI-on-the-edge-device), customized for personal use.
 
 - It is **actively developed and maintained** independently
 - It is **no longer compatible** with the upstream project

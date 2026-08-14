@@ -1,5 +1,43 @@
 # Changelog
 
+## [17.4.6-SEFork](https://github.com/SEspe/AI-on-the-edge-device/compare/v17.4.5-SEFork...v17.4.6-SEFork) (2026-08-14)
+
+**Online Doc Update.** Documentation and attribution only — no functional firmware changes.
+
+An audit of the documentation reachable from `System > Documentation` and the REST API docs found
+several places where the documentation did not match the firmware's actual behaviour.
+
+### Documentation
+
+* **webui:** point all four `System > Documentation` links at this fork. They referenced upstream,
+  which no longer matches this firmware's documented behaviour
+* **rest api (ota):** document that `task=update` only *stages* an update and returns the literal
+  string `reboot` as an instruction to the client. A scripted caller must issue `GET /reboot`
+  itself or **nothing is flashed**. Adds the full four-step sequence, the per-filetype response
+  table, and the previously undocumented `delete` parameter
+* **rest api (upload):** document the URL-to-path mapping, the 8 MB size limit, the no-overwrite
+  behaviour, and all five error responses. Previously the page described neither the URL format
+  nor any failure mode
+* **rest api (info):** add the undocumented `network_opmode` and `webhook_status` fields, and
+  correct the JSON example, which used a non-existent `wlan_status` key instead of
+  `connection_status` and omitted `wlan_channel`
+* **rest api (config):** regenerate the example from a live device — it was config version 3 while
+  the firmware emits version 6, and was missing the entire `webhook` section
+
+### Attribution
+
+* **readme:** add an "About This Fork" section stating this fork is maintained for personal use,
+  with no support or compatibility promises, and pointing anyone wanting a general-purpose
+  version at Slider0007's fork
+* **readme:** title and release links now refer to this fork rather than upstream
+* **webui:** add the same personal-use note to the copyright block on the System page
+
+### Verified as correct (no change needed)
+
+* `_OVERVIEW.md` endpoint list matches the registered URI handlers exactly (21 endpoints)
+* `wlan.md`, `reboot.md`, `cycle_start.md` match observed behaviour
+* The `Jomjol → Slider0007 → SteinE` lineage links are intentional and remain pointed upstream
+
 ## [17.4.5-SEFork](https://github.com/SEspe/AI-on-the-edge-device/compare/v17.4.4-SEFork...v17.4.5-SEFork) (2026-08-14)
 
 Stability release. Fixes heap fragmentation that degraded the WiFi link over time, removes an
