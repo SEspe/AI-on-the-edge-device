@@ -406,22 +406,15 @@ esp_err_t initWifiClient(void)
         LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_set_ps: Error: " + intToHexString(retVal));
     }
 
-    // Cap transmit power. Unit is 0.25dBm, so 60 = 15dBm against a ~20dBm default.
-    // Full power draws current spikes of 250-350mA during TX bursts, which sags the 3V3
-    // rail on ESP32CAM-class hardware and shows up as heavy packet loss and multi-second
-    // ping times while RSSI still reads healthy - small MQTT messages keep working while
-    // sustained transfers collapse. Backing off costs link budget we have to spare (RSSI
-    // measured at -51..-55) and keeps the peak draw within what the supply can deliver.
-    // It also offsets the extra average draw from keeping the radio awake above.
-    retVal = esp_wifi_set_max_tx_power(60);
-    if (retVal != ESP_OK) {
-        LogFile.writeToFile(ESP_LOG_ERROR, TAG, "esp_wifi_set_max_tx_power: Error: " + intToHexString(retVal));
-    }
-    else {
-        int8_t txPower = 0;
-        if (esp_wifi_get_max_tx_power(&txPower) == ESP_OK) {
-            LogFile.writeToFile(ESP_LOG_INFO, TAG, "WLAN TX power: " + std::to_string(txPower / 4) + " dBm, power save: off");
-        }
+    // Transmit power is deliberately left at the default. Capping it at 15dBm was tried
+    // and measurably made things worse: packet loss went from 0/20 to 5-9/20 and average
+    // ping from 15ms to 156-669ms across four consecutive measurements, with throughput
+    // dropping from ~104 KB/s to single digits. The reasoning behind the cap was faulty -
+    // a healthy RSSI of -51 describes the downlink (what the device hears from the AP)
+    // and says nothing about the uplink budget that lowering TX power actually reduces.
+    int8_t txPower = 0;
+    if (esp_wifi_get_max_tx_power(&txPower) == ESP_OK) {
+        LogFile.writeToFile(ESP_LOG_INFO, TAG, "WLAN TX power: " + std::to_string(txPower / 4) + " dBm, power save: off");
     }
 
     // Set hostname
