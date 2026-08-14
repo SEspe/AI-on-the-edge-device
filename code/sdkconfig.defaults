@@ -189,6 +189,16 @@ CONFIG_LWIP_ESP_LWIP_ASSERT=n
 # accept a new connection, which truncates in-flight file transfers.
 CONFIG_LWIP_MAX_SOCKETS=16
 
+# Let WiFi and LWIP take their buffers from PSRAM instead of competing for the
+# scarce internal DRAM. Measured on hardware: the largest contiguous internal
+# block degrades from ~102KB to ~18KB during sustained web server use, and the
+# radio link then drops frames - ICMP loss and multi-second latency while RSSI
+# still reads -51. WiFi buffers must be DMA capable, and ALWAYSINTERNAL=8192
+# forces every small allocation into that same region. The board has 8MB PSRAM
+# with ~2.3MB free, so moving these out costs nothing we are short of.
+CONFIG_SPIRAM_TRY_ALLOCATE_WIFI_LWIP=y
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=4096
+
 
 #
 # DHCP server
