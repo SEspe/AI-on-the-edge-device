@@ -1,5 +1,12 @@
 # Changelog
 
+## [17.4.3-SEFork](https://github.com/SEspe/AI-on-the-edge-device/compare/v17.4.2-SEFork...v17.4.3-SEFork) (2026-08-14)
+
+### Bug Fixes
+
+* **webui:** point the OTA page's GitHub release link at this fork, so the update instructions
+  lead to the releases that actually carry these builds instead of upstream's (3200ef8)
+
 ## [17.4.2-SEFork](https://github.com/SEspe/AI-on-the-edge-device/compare/v17.4.1-SLFork...v17.4.2-SEFork) (2026-08-14)
 
 First release published under this fork's own `-SEFork` naming. Functionally identical to
