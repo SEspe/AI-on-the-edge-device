@@ -662,6 +662,20 @@ httpd_handle_t startWebserver(void)
     config.lru_purge_enable = true; // Cut old connections if new ones are needed
     config.uri_match_fn = httpd_uri_match_wildcard;
 
+    // Default is 5s, which is too short on this hardware and truncates large downloads.
+    // Measured: streaming a 3MB file while a browser holds keep-alive connections fails
+    // reliably (0/6 completed, cut off at 10-30%). The device logs
+    // ESP_ERR_HTTPD_RESP_SEND (0xb006) with errno 11 (EAGAIN) - the socket was never
+    // closed and heap was healthy (~89kB free); send() simply could not drain the buffer
+    // within the timeout. WiFi airtime contention plus a 5760 byte TCP window keeps the
+    // send buffer full, and one transient 5s stall aborts the whole transfer.
+    //
+    // Raising this trades against the fact that httpd runs a single task: a genuinely
+    // dead client now occupies it for longer before the send gives up. 20s is a
+    // compromise - enough headroom to ride out contention, bounded enough that a stuck
+    // socket does not block the web server indefinitely.
+    config.send_wait_timeout = 20;
+
     ESP_LOGI(TAG, "Starting webserver on port: '%d'", config.server_port);
     if (httpd_start(&server, &config) == ESP_OK) {
         return server;

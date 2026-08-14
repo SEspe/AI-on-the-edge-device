@@ -1,5 +1,45 @@
 # Changelog
 
+## [17.4.7-SEFork](https://github.com/SEspe/AI-on-the-edge-device/compare/v17.4.6-SEFork...v17.4.7-SEFork) (2026-08-14)
+
+Diagnostics for the open file server truncation issue, plus a longer send timeout.
+
+### Features
+
+* **fileserver:** log why a chunk send fails — `esp_err`, `errno`, bytes sent, chunk size, socket
+  descriptor and heap state. Previously a truncated download produced no log entry at all and the
+  client could only see a short read
+
+### Bug Fixes
+
+* **webserver:** raise `send_wait_timeout` from the 5 s default to 20 s
+
+### What the diagnostics revealed
+
+Every truncation reports the same thing:
+
+```
+esp_err: 0xb006 (ESP_ERR_HTTPD_RESP_SEND) | errno: 11 (EAGAIN) | chunk: 4096 byte
+sockfd valid | heap ~89000 free / ~78000 largest
+```
+
+`errno 11` is `EAGAIN`. The socket was **never closed**, and memory was healthy — the send simply
+could not drain the buffer within `SO_SNDTIMEO`, which httpd sets from `send_wait_timeout`.
+
+That eliminates several plausible explanations at once: it is not a connection reset, not an LRU
+purge, not heap exhaustion, and not the RF link.
+
+### Known issue — still unresolved
+
+Raising the timeout to 20 s does **not** fix it, so the stall exceeds 20 seconds. It also fails
+identically in Manual mode, ruling out contention with the recognition cycle. Plain downloads are
+unaffected: 3/3 complete at 148–161 KB/s with no concurrent load.
+
+The remaining candidate is LWIP resource exhaustion — connections arriving while the single
+server task is blocked in the download handler accumulate in the backlog and as `TIME_WAIT` PCBs,
+and if pbufs or TCP segments run out the TX path stalls while `heap_caps` still looks healthy.
+Untested.
+
 ## [17.4.6-SEFork](https://github.com/SEspe/AI-on-the-edge-device/compare/v17.4.5-SEFork...v17.4.6-SEFork) (2026-08-14)
 
 **Online Doc Update.** Documentation and attribution only — no functional firmware changes.

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <cstring>
+#include <cerrno>
 #include <iostream>
 #include <unordered_set>
 #include <sys/types.h>
@@ -22,6 +23,7 @@ extern "C" {
 #include <esp_partition.h>
 #include <esp_core_dump.h>
 #include <esp_err.h>
+#include <esp_heap_caps.h>
 #include <esp_log.h>
 #include <esp_vfs.h>
 #include <esp_spiffs.h>
@@ -727,15 +729,35 @@ static esp_err_t download_get_handler(httpd_req_t *req)
 
     char *buffer = ((HttpServerData *)req->user_ctx)->scratch; // Retrieve the pointer to scratch buffer for temporary storage
     size_t bytesRead = 0;
+    size_t bytesSent = 0;
 
     while ((bytesRead = fread(buffer, 1, WEBSERVER_SCRATCH_BUFSIZE, file)) > 0) {
-        if (httpd_resp_send_chunk(req, buffer, bytesRead) != ESP_OK) {
+        esp_err_t sendRetVal = httpd_resp_send_chunk(req, buffer, bytesRead);
+        if (sendRetVal != ESP_OK) {
+            // Capture errno immediately: any further call may overwrite it
+            int sockErrno = errno;
             fclose(file);
+
+            // Diagnostics for truncated transfers. httpd_resp_send_chunk() failing mid-file is
+            // the whole reason a download ends up incomplete, and the client only ever sees a
+            // short read - it cannot tell whether the socket was closed, the send timed out or
+            // an allocation failed. Log what the firmware actually knows.
+            LogFile.writeToFile(ESP_LOG_ERROR, TAG,
+                                "sendFile: chunk send failed | file: " + std::string(filePath) +
+                                    " | sent: " + std::to_string(bytesSent) + "/" + std::to_string((long)fileStat.st_size) +
+                                    " byte | chunk: " + std::to_string(bytesRead) +
+                                    " byte | esp_err: " + intToHexString(sendRetVal) + " (" + std::string(esp_err_to_name(sendRetVal)) +
+                                    ") | errno: " + std::to_string(sockErrno) + " (" + std::string(strerror(sockErrno)) +
+                                    ") | sockfd: " + std::to_string(httpd_req_to_sockfd(req)) +
+                                    " | heap int/largest: " + std::to_string(heap_caps_get_free_size(MALLOC_CAP_INTERNAL)) + "/" +
+                                    std::to_string(heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL)));
+
             httpd_resp_sendstr_chunk(req, NULL);
             std::string msg = "Failed to send file :" + std::string(filePath);
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, msg.c_str());
             return ESP_FAIL;
         }
+        bytesSent += bytesRead;
     }
 
     httpd_resp_sendstr_chunk(req, NULL);
